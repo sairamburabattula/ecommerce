@@ -1,21 +1,23 @@
-import { Outfit } from "next/font/google";
 import { Toaster } from "react-hot-toast";
 import StoreProvider from "@/app/StoreProvider";
 import "./globals.css";
 
-const outfit = Outfit({ subsets: ["latin"], weight: ["400", "500", "600"] });
-
 export const metadata = {
-    title: "GoCart. - Shop smarter",
-    description: "GoCart. - Shop smarter",
+    title: "Cartify - Shop smarter",
+    description: "Cartify - Multi-vendor E-Commerce Platform",
 };
 
 export default function RootLayout({ children }) {
     return (
         <html lang="en">
-            <body className={`${outfit.className} antialiased`}>
+            <head>
+                <link rel="preconnect" href="https://fonts.googleapis.com" />
+                <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+                <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+            </head>
+            <body className="antialiased font-sans">
                 <StoreProvider>
-                    <Toaster />
+                    <Toaster position="bottom-right" />
                     {children}
                 </StoreProvider>
             </body>

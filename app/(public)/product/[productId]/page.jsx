@@ -12,8 +12,21 @@ export default function Product() {
     const products = useSelector(state => state.product.list);
 
     const fetchProduct = async () => {
-        const product = products.find((product) => product.id === productId);
-        setProduct(product);
+        let found = products.find((p) => p.id === productId);
+        if (found) {
+            setProduct(found);
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/products/${productId}`);
+            const data = await res.json();
+            if (data.success && data.product) {
+                setProduct(data.product);
+            }
+        } catch (e) {
+            console.error('Error fetching product details:', e);
+        }
     }
 
     useEffect(() => {

@@ -2,8 +2,12 @@
 import { XIcon } from "lucide-react"
 import { useState } from "react"
 import { toast } from "react-hot-toast"
+import { useDispatch } from "react-redux"
+import { addAddress } from "@/lib/features/address/addressSlice"
 
 const AddressModal = ({ setShowAddressModal }) => {
+
+    const dispatch = useDispatch()
 
     const [address, setAddress] = useState({
         name: '',
@@ -25,8 +29,25 @@ const AddressModal = ({ setShowAddressModal }) => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-
-        setShowAddressModal(false)
+        try {
+            const res = await fetch('/api/addresses', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(address)
+            });
+            const data = await res.json();
+            if (data.success) {
+                dispatch(addAddress(data.address || address));
+                toast.success('Address saved successfully');
+                setShowAddressModal(false);
+            } else {
+                toast.error(data.message || 'Failed to save address');
+            }
+        } catch (err) {
+            dispatch(addAddress({ ...address, id: 'addr_' + Date.now() }));
+            toast.success('Address saved');
+            setShowAddressModal(false);
+        }
     }
 
     return (

@@ -4,8 +4,11 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import toast from "react-hot-toast"
 import Loading from "@/components/Loading"
+import { useRouter } from "next/navigation"
 
 export default function CreateStore() {
+
+    const router = useRouter()
 
     const [alreadySubmitted, setAlreadySubmitted] = useState(false)
     const [status, setStatus] = useState("")
@@ -27,17 +30,61 @@ export default function CreateStore() {
     }
 
     const fetchSellerStatus = async () => {
-        // Logic to check if the store is already submitted
-
-
-        setLoading(false)
+        try {
+            const res = await fetch('/api/stores?userId=user_customer');
+            const data = await res.json();
+            if (data.success && data.store) {
+                setAlreadySubmitted(true);
+                setStatus(data.store.status);
+                if (data.store.status === 'approved') {
+                    setMessage(`Your store "${data.store.name}" is approved!`);
+                    setTimeout(() => {
+                        router.push('/store');
+                    }, 3000);
+                } else if (data.store.status === 'rejected') {
+                    setMessage(`Your store application was rejected. Please contact administrator.`);
+                } else {
+                    setMessage(`Your store "${data.store.name}" application is currently under review by the administrator.`);
+                }
+            }
+        } catch (error) {
+            console.error('Error fetching seller status:', error);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const onSubmitHandler = async (e) => {
-        e.preventDefault()
-        // Logic to submit the store details
+        e.preventDefault();
 
+        if (!storeInfo.name || !storeInfo.username || !storeInfo.email) {
+            toast.error('Please fill in all required fields');
+            return;
+        }
 
+        try {
+            const res = await fetch('/api/stores', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...storeInfo,
+                    logo: '/assets/happy_store.webp',
+                    userId: 'user_customer'
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                setAlreadySubmitted(true);
+                setStatus('pending');
+                setMessage('Your store details have been submitted and are pending admin approval!');
+                toast.success('Store application submitted successfully');
+            } else {
+                toast.error(data.message || 'Failed to submit store');
+            }
+        } catch (error) {
+            toast.error('Failed to submit store application');
+        }
     }
 
     useEffect(() => {
@@ -52,7 +99,7 @@ export default function CreateStore() {
                         {/* Title */}
                         <div>
                             <h1 className="text-3xl ">Add Your <span className="text-slate-800 font-medium">Store</span></h1>
-                            <p className="max-w-lg">To become a seller on GoCart, submit your store details for review. Your store will be activated after admin verification.</p>
+                            <p className="max-w-lg">To become a seller on Cartify, submit your store details for review. Your store will be activated after admin verification.</p>
                         </div>
 
                         <label className="mt-10 cursor-pointer">

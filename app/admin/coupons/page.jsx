@@ -20,14 +20,46 @@ export default function AdminCoupons() {
     })
 
     const fetchCoupons = async () => {
-        setCoupons(couponDummyData)
+        try {
+            const res = await fetch('/api/coupons');
+            const data = await res.json();
+            if (data.success && data.coupons) {
+                setCoupons(data.coupons);
+            } else {
+                setCoupons(couponDummyData);
+            }
+        } catch (error) {
+            setCoupons(couponDummyData);
+        }
     }
 
     const handleAddCoupon = async (e) => {
         e.preventDefault()
-        // Logic to add a coupon
-
-
+        try {
+            const res = await fetch('/api/coupons', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(newCoupon)
+            });
+            const data = await res.json();
+            if (data.success) {
+                toast.success('Coupon created successfully');
+                fetchCoupons();
+                setNewCoupon({
+                    code: '',
+                    description: '',
+                    discount: '',
+                    forNewUser: false,
+                    forMember: false,
+                    isPublic: false,
+                    expiresAt: new Date()
+                });
+            } else {
+                toast.error(data.message || 'Failed to add coupon');
+            }
+        } catch (error) {
+            toast.error('Failed to create coupon');
+        }
     }
 
     const handleChange = (e) => {
@@ -35,9 +67,20 @@ export default function AdminCoupons() {
     }
 
     const deleteCoupon = async (code) => {
-        // Logic to delete a coupon
-
-
+        try {
+            const res = await fetch(`/api/coupons?code=${code}`, {
+                method: 'DELETE'
+            });
+            const data = await res.json();
+            if (data.success) {
+                setCoupons(prev => prev.filter(c => c.code !== code));
+                toast.success('Coupon deleted');
+            } else {
+                toast.error(data.message || 'Failed to delete coupon');
+            }
+        } catch (error) {
+            toast.error('Failed to delete coupon');
+        }
     }
 
     useEffect(() => {

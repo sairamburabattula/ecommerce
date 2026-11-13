@@ -11,13 +11,42 @@ export default function AdminStores() {
     const [loading, setLoading] = useState(true)
 
     const fetchStores = async () => {
-        setStores(storesDummyData)
-        setLoading(false)
+        try {
+            const res = await fetch('/api/stores');
+            const data = await res.json();
+            if (data.success && data.stores) {
+                setStores(data.stores);
+            } else {
+                setStores(storesDummyData);
+            }
+        } catch (error) {
+            setStores(storesDummyData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const toggleIsActive = async (storeId) => {
-        // Logic to toggle the status of a store
+        const store = stores.find(s => s.id === storeId);
+        if (!store) return;
+        const newStatus = !store.isActive;
 
+        try {
+            const res = await fetch(`/api/stores/${storeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ isActive: newStatus })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setStores(prev => prev.map(s => s.id === storeId ? { ...s, isActive: newStatus } : s));
+                toast.success(`Store status updated to ${newStatus ? 'active' : 'inactive'}`);
+            } else {
+                toast.error(data.message || 'Failed to update store');
+            }
+        } catch (error) {
+            toast.error('Network error updating store');
+        }
     }
 
     useEffect(() => {

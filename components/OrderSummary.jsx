@@ -1,33 +1,91 @@
 import { PlusIcon, SquarePenIcon, XIcon } from 'lucide-react';
 import React, { useState } from 'react'
 import AddressModal from './AddressModal';
-import { useSelector } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 import toast from 'react-hot-toast';
 import { useRouter } from 'next/navigation';
+import { clearCart } from '@/lib/features/cart/cartSlice';
 
 const OrderSummary = ({ totalPrice, items }) => {
 
     const currency = process.env.NEXT_PUBLIC_CURRENCY_SYMBOL || '$';
 
     const router = useRouter();
+    const dispatch = useDispatch();
 
     const addressList = useSelector(state => state.address.list);
 
     const [paymentMethod, setPaymentMethod] = useState('COD');
-    const [selectedAddress, setSelectedAddress] = useState(null);
+    const [selectedAddress, setSelectedAddress] = useState(addressList?.[0] || null);
     const [showAddressModal, setShowAddressModal] = useState(false);
     const [couponCodeInput, setCouponCodeInput] = useState('');
     const [coupon, setCoupon] = useState('');
 
     const handleCouponCode = async (event) => {
         event.preventDefault();
-        
+        if (!couponCodeInput.trim()) {
+            toast.error("Please enter a coupon code");
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/coupons/validate', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ code: couponCodeInput, amount: totalPrice })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setCoupon(data.coupon);
+                setCouponCodeInput('');
+                toast.success(data.message || 'Coupon applied successfully!');
+            } else {
+                toast.error(data.message || 'Invalid coupon code');
+            }
+        } catch (error) {
+            toast.error("Failed to check coupon code");
+        }
     }
 
     const handlePlaceOrder = async (e) => {
         e.preventDefault();
 
-        router.push('/orders')
+        if (!items || items.length === 0) {
+            toast.error("Your cart is empty");
+            return;
+        }
+
+        const addressToUse = selectedAddress || addressList?.[0];
+        if (!addressToUse) {
+            toast.error("Please add and select a shipping address");
+            setShowAddressModal(true);
+            return;
+        }
+
+        try {
+            const res = await fetch('/api/orders', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    items,
+                    addressId: addressToUse.id || 'addr_1',
+                    paymentMethod,
+                    coupon: coupon || null,
+                    userId: 'user_customer'
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                dispatch(clearCart());
+                toast.success('Order placed successfully!');
+                router.push('/orders');
+            } else {
+                toast.error(data.message || 'Failed to place order');
+            }
+        } catch (error) {
+            toast.error('Something went wrong placing the order');
+        }
     }
 
     return (

@@ -1,13 +1,7 @@
 <div align="center">
-  <h1><img src="https://gocart-gs.vercel.app/favicon.ico" width="20" height="20" alt="GoCart Favicon">
-   GoCart</h1>
+  <h1>Cartify - Full-Stack Multi-Vendor E-Commerce Platform</h1>
   <p>
-    An open-source multi-vendor e-commerce platform built with Next.js and Tailwind CSS.
-  </p>
-  <p>
-    <a href="https://github.com/GreatStackDev/goCart/blob/main/LICENSE.md"><img src="https://img.shields.io/github/license/GreatStackDev/goCart?style=for-the-badge" alt="License"></a>
-    <a href="https://github.com/GreatStackDev/goCart/pulls"><img src="https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge" alt="PRs Welcome"></a>
-    <a href="https://github.com/GreatStackDev/goCart/issues"><img src="https://img.shields.io/github/issues/GreatStackDev/goCart?style=for-the-badge" alt="GitHub issues"></a>
+    An open-source multi-vendor e-commerce platform built with Next.js 15, React 19, Tailwind CSS 4, Redux Toolkit, and zero-config SQLite.
   </p>
 </div>
 
@@ -17,69 +11,120 @@
 
 - [✨ Features](#-features)
 - [🛠️ Tech Stack](#-tech-stack)
-- [🚀 Getting Started](#-getting-started)
-- [🤝 Contributing](#-contributing)
-- [📜 License](#-license)
+- [🚀 Quick Start](#-quick-start)
+- [🧭 Navigation & Routes](#-navigation--routes)
+- [🏷️ Demo Coupons](#-demo-coupons)
+- [🔌 API Endpoints](#-api-endpoints)
 
 ---
 
-## Features
+## ✨ Features
 
-- **Multi-Vendor Architecture:** Allows multiple vendors to register, manage their own products, and sell on a single platform.
-- **Customer-Facing Storefront:** A beautiful and responsive user interface for customers to browse and purchase products.
-- **Vendor Dashboards:** Dedicated dashboards for vendors to manage products, view sales analytics, and track orders.
-- **Admin Panel:** A comprehensive dashboard for platform administrators to oversee vendors, products, and commissions.
+- **Multi-Vendor Architecture:**
+  - Vendor registration and onboarding (`/create-store`).
+  - Dedicated Seller Dashboard (`/store`) with metrics, revenue, and customer review feed.
+  - Product Catalog Manager with stock toggling and instant product publishing (`/store/add-product`).
+  - Store Order Fulfillment manager with status updates (`ORDER_PLACED`, `PROCESSING`, `SHIPPED`, `DELIVERED`).
+- **Customer Storefront:**
+  - Modern responsive UI with live category filter pills and debounced search.
+  - Interactive product details with image galleries, discount calculator, and customer reviews.
+  - Full Redux shopping cart with item counters, dynamic pricing, and address selector.
+  - Live Coupon System with instant code verification and discount application.
+  - Order tracking and review modal for delivered products.
+  - Interactive multi-tier pricing page (`/pricing`).
+- **Admin Control Panel (`/admin`):**
+  - Platform-wide dashboard with total products, revenue, orders, and store counts.
+  - Interactive Orders/Day area chart powered by Recharts.
+  - Store Application Approval queue (`/admin/approve`) to approve or reject vendor onboarding.
+  - Live Stores management (`/admin/stores`) to toggle active status.
+  - Coupon management (`/admin/coupons`) to create and delete platform discount codes.
+- **Zero-Config Database:**
+  - Built-in SQLite database powered by Node's native `DatabaseSync` (`data/gocart.db`).
+  - Automatically provisions tables and seeds initial products, stores, coupons, demo addresses, and orders.
 
-## 🛠️ Tech Stack <a name="-tech-stack"></a>
+---
 
-- **Framework:** Next.js
-- **Styling:** Tailwind CSS
-- **UI Components:** Lucide React for icons
+## 🛠️ Tech Stack
+
+- **Framework:** Next.js 15 (App Router)
+- **Library:** React 19
+- **Styling:** Tailwind CSS 4
 - **State Management:** Redux Toolkit
-
-## 🚀 Getting Started <a name="-getting-started"></a>
-
-First, install the dependencies. We recommend using `npm` for this project.
-
-```bash
-npm install
-```
-
-Then, run the development server:
-
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/(public)/page.js`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Outfit](https://vercel.com/font), a new font family for Vercel.
+- **Icons & Visuals:** Lucide React, Recharts
+- **Database:** SQLite (`node:sqlite` in `lib/db.js`)
+- **Notifications:** React Hot Toast
 
 ---
 
-## 🤝 Contributing <a name="-contributing"></a>
+## 🚀 Quick Start
 
-We welcome contributions! Please see our [CONTRIBUTING.md](./CONTRIBUTING.md) for more details on how to get started.
+1. **Install dependencies:**
+   ```bash
+   npm install
+   ```
+   *(If on Windows with PowerShell script restrictions, use `npm.cmd install` or run `Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser`)*
+
+2. **Start the development server:**
+   ```bash
+   npm run dev
+   # or
+   npm.cmd run dev
+   ```
+
+3. **Open in browser:**
+   Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
-## 📜 License <a name="-license"></a>
+## 🧭 Navigation & Routes
 
-This project is licensed under the MIT License. See the [LICENSE.md](./LICENSE.md) file for details.
+| Section | Route | Description |
+|---|---|---|
+| **Storefront** | `/` | Homepage with hero, latest arrivals, bestsellers, and newsletter |
+| **Catalog** | `/shop` | Full product catalog with live search & category filters |
+| **Store Profile** | `/shop/happyshop` | Public storefront for a specific vendor |
+| **Cart & Checkout** | `/cart` | Shopping cart, address selection, coupons, and order placement |
+| **My Orders** | `/orders` | Customer order history with item breakdown and review modal |
+| **Pricing** | `/pricing` | Shopper Free, GoCart Plus, and Seller Pro tiers |
+| **Seller Onboarding** | `/create-store` | Submit store application for admin verification |
+| **Seller Dashboard** | `/store` | Vendor analytics, total revenue, and review feed |
+| **Seller Products** | `/store/manage-product` | View all store products & toggle stock availability |
+| **Add Product** | `/store/add-product` | Create and publish new products with images |
+| **Seller Orders** | `/store/orders` | Manage incoming orders and update delivery statuses |
+| **Admin Dashboard** | `/admin` | Platform overview, revenue analytics, and orders chart |
+| **Store Approvals** | `/admin/approve` | Review and approve/reject pending vendor applications |
+| **Store Directory** | `/admin/stores` | Toggle stores active/inactive |
+| **Coupon Manager** | `/admin/coupons` | Create and delete promotional coupon codes |
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
+## 🏷️ Demo Coupons
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+You can use these codes during checkout on the `/cart` page:
+- `CARTIFY10` - 10% off entire order
+- `WELCOME20` - 20% off for new shoppers
+- `VIP30` - 30% off for Plus members
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
+
+## 🔌 API Endpoints
+
+- `GET /api/products` - List products (supports `?search=`, `?category=`, `?storeId=`, `?username=`)
+- `POST /api/products` - Create a new product
+- `PATCH /api/products/:id` - Update product details or stock
+- `DELETE /api/products/:id` - Remove a product
+- `GET /api/stores` - List stores (`?status=pending` or `?username=`)
+- `POST /api/stores` - Submit new store application
+- `PATCH /api/stores/:id` - Update store status or active state
+- `GET /api/orders` - List orders (`?userId=` or `?storeId=`)
+- `POST /api/orders` - Place order from cart
+- `PATCH /api/orders/:id` - Update order fulfillment status
+- `GET /api/coupons` - List all coupons
+- `POST /api/coupons` - Create new coupon
+- `DELETE /api/coupons` - Delete coupon
+- `POST /api/coupons/validate` - Validate coupon code & return discount
+- `GET /api/addresses` - List addresses for user
+- `POST /api/addresses` - Save new shipping address
+- `POST /api/ratings` - Submit product review and rating
+- `GET /api/admin/dashboard` - Platform aggregate analytics
+- `GET /api/store/dashboard` - Vendor aggregate analytics

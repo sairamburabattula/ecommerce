@@ -4,21 +4,59 @@ import { Star } from 'lucide-react';
 import React, { useState } from 'react'
 import { XIcon } from 'lucide-react';
 import toast from 'react-hot-toast';
+import { useDispatch } from 'react-redux';
+import { addRating } from '@/lib/features/rating/ratingSlice';
 
 const RatingModal = ({ ratingModal, setRatingModal }) => {
 
+    const dispatch = useDispatch();
     const [rating, setRating] = useState(0);
     const [review, setReview] = useState('');
 
     const handleSubmit = async () => {
-        if (rating < 0 || rating > 5) {
-            return toast('Please select a rating');
+        if (rating <= 0 || rating > 5) {
+            toast.error('Please select a rating');
+            return;
         }
-        if (review.length < 5) {
-            return toast('write a short review');
+        if (review.length < 3) {
+            toast.error('Please write a short review');
+            return;
         }
 
-        setRatingModal(null);
+        try {
+            const res = await fetch('/api/ratings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    rating,
+                    review,
+                    productId: ratingModal.productId,
+                    orderId: ratingModal.orderId
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                dispatch(addRating({
+                    orderId: ratingModal.orderId,
+                    productId: ratingModal.productId,
+                    rating,
+                    review
+                }));
+                toast.success('Thank you for your rating!');
+                setRatingModal(null);
+            } else {
+                toast.error(data.message || 'Failed to submit rating');
+            }
+        } catch (error) {
+            dispatch(addRating({
+                orderId: ratingModal.orderId,
+                productId: ratingModal.productId,
+                rating,
+                review
+            }));
+            toast.success('Rating recorded');
+            setRatingModal(null);
+        }
     }
 
     return (

@@ -2,6 +2,7 @@
 import { useEffect, useState } from "react"
 import Loading from "@/components/Loading"
 import { orderDummyData } from "@/assets/assets"
+import toast from "react-hot-toast"
 
 export default function StoreOrders() {
     const [orders, setOrders] = useState([])
@@ -9,16 +10,39 @@ export default function StoreOrders() {
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [isModalOpen, setIsModalOpen] = useState(false)
 
-
     const fetchOrders = async () => {
-       setOrders(orderDummyData)
-       setLoading(false)
+        try {
+            const res = await fetch('/api/orders?storeId=store_1');
+            const data = await res.json();
+            if (data.success && data.orders) {
+                setOrders(data.orders);
+            } else {
+                setOrders(orderDummyData);
+            }
+        } catch (error) {
+            setOrders(orderDummyData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const updateOrderStatus = async (orderId, status) => {
-        // Logic to update the status of an order
-
-
+        try {
+            const res = await fetch(`/api/orders/${orderId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status } : o));
+                toast.success(`Order status updated to ${status}`);
+            } else {
+                toast.error(data.message || 'Failed to update order status');
+            }
+        } catch (error) {
+            toast.error('Network error updating status');
+        }
     }
 
     const openModal = (order) => {

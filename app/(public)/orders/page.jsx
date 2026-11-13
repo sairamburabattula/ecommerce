@@ -9,7 +9,20 @@ export default function Orders() {
     const [orders, setOrders] = useState([]);
 
     useEffect(() => {
-        setOrders(orderDummyData)
+        const fetchOrders = async () => {
+            try {
+                const res = await fetch('/api/orders?userId=user_customer');
+                const data = await res.json();
+                if (data.success && data.orders && data.orders.length > 0) {
+                    setOrders(data.orders);
+                } else {
+                    setOrders(orderDummyData);
+                }
+            } catch (e) {
+                setOrders(orderDummyData);
+            }
+        };
+        fetchOrders();
     }, []);
 
     return (

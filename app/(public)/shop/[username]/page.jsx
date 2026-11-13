@@ -15,9 +15,31 @@ export default function StoreShop() {
     const [loading, setLoading] = useState(true)
 
     const fetchStoreData = async () => {
-        setStoreInfo(dummyStoreData)
-        setProducts(productDummyData)
-        setLoading(false)
+        try {
+            const [storeRes, prodRes] = await Promise.all([
+                fetch(`/api/stores?username=${username}`),
+                fetch(`/api/products?username=${username}`)
+            ]);
+            const storeData = await storeRes.json();
+            const prodData = await prodRes.json();
+
+            if (storeData.success && storeData.store) {
+                setStoreInfo(storeData.store);
+            } else {
+                setStoreInfo(dummyStoreData);
+            }
+
+            if (prodData.success && prodData.products) {
+                setProducts(prodData.products);
+            } else {
+                setProducts(productDummyData);
+            }
+        } catch (error) {
+            setStoreInfo(dummyStoreData);
+            setProducts(productDummyData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {

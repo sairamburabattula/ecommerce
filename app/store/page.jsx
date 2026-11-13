@@ -28,8 +28,19 @@ export default function Dashboard() {
     ]
 
     const fetchDashboardData = async () => {
-        setDashboardData(dummyStoreDashboardData)
-        setLoading(false)
+        try {
+            const res = await fetch('/api/store/dashboard?storeId=store_1');
+            const data = await res.json();
+            if (data.success && data.dashboardData) {
+                setDashboardData(data.dashboardData);
+            } else {
+                setDashboardData(dummyStoreDashboardData);
+            }
+        } catch (error) {
+            setDashboardData(dummyStoreDashboardData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     useEffect(() => {

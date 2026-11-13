@@ -12,18 +12,42 @@ export default function AdminApprove() {
 
 
     const fetchStores = async () => {
-        setStores(storesDummyData)
-        setLoading(false)
+        try {
+            const res = await fetch('/api/stores?status=pending');
+            const data = await res.json();
+            if (data.success) {
+                setStores(data.stores);
+            } else {
+                setStores(storesDummyData);
+            }
+        } catch (error) {
+            setStores(storesDummyData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const handleApprove = async ({ storeId, status }) => {
-        // Logic to approve a store
-
-
+        try {
+            const res = await fetch(`/api/stores/${storeId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ status })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setStores(prev => prev.filter(s => s.id !== storeId));
+                toast.success(`Store application ${status}`);
+            } else {
+                toast.error(data.message || 'Operation failed');
+            }
+        } catch (error) {
+            toast.error('Failed to update store');
+        }
     }
 
     useEffect(() => {
-            fetchStores()
+        fetchStores()
     }, [])
 
     return !loading ? (

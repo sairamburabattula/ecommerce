@@ -23,10 +23,56 @@ export default function StoreAddProduct() {
         setProductInfo({ ...productInfo, [e.target.name]: e.target.value })
     }
 
+    const convertToBase64 = (file) => new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+    });
+
     const onSubmitHandler = async (e) => {
         e.preventDefault()
-        // Logic to add a product
-        
+        if (!productInfo.name || !productInfo.price || !productInfo.category) {
+            toast.error("Please fill in all required product fields");
+            return;
+        }
+
+        try {
+            const uploadedUrls = [];
+            for (const key of Object.keys(images)) {
+                if (images[key]) {
+                    const base64 = await convertToBase64(images[key]);
+                    uploadedUrls.push(base64);
+                }
+            }
+
+            const res = await fetch('/api/products', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    ...productInfo,
+                    images: uploadedUrls.length > 0 ? uploadedUrls : ['/assets/product_img1.png'],
+                    storeId: 'store_1'
+                })
+            });
+
+            const data = await res.json();
+            if (data.success) {
+                toast.success('Product added successfully!');
+                setProductInfo({
+                    name: "",
+                    description: "",
+                    mrp: 0,
+                    price: 0,
+                    category: "",
+                });
+                setImages({ 1: null, 2: null, 3: null, 4: null });
+            } else {
+                toast.error(data.message || 'Failed to add product');
+            }
+        } catch (error) {
+            toast.error('Error adding product');
+        }
     }
 
 

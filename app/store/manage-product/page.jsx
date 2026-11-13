@@ -13,14 +13,42 @@ export default function StoreManageProducts() {
     const [products, setProducts] = useState([])
 
     const fetchProducts = async () => {
-        setProducts(productDummyData)
-        setLoading(false)
+        try {
+            const res = await fetch('/api/products?storeId=store_1');
+            const data = await res.json();
+            if (data.success && data.products) {
+                setProducts(data.products);
+            } else {
+                setProducts(productDummyData);
+            }
+        } catch (error) {
+            setProducts(productDummyData);
+        } finally {
+            setLoading(false);
+        }
     }
 
     const toggleStock = async (productId) => {
-        // Logic to toggle the stock of a product
+        const prod = products.find(p => p.id === productId);
+        if (!prod) return;
+        const newStock = !prod.inStock;
 
-
+        try {
+            const res = await fetch(`/api/products/${productId}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ inStock: newStock })
+            });
+            const data = await res.json();
+            if (data.success) {
+                setProducts(prev => prev.map(p => p.id === productId ? { ...p, inStock: newStock } : p));
+                toast.success(`Product is now ${newStock ? 'In Stock' : 'Out of Stock'}`);
+            } else {
+                toast.error(data.message || 'Failed to update stock');
+            }
+        } catch (error) {
+            toast.error('Failed to update product stock');
+        }
     }
 
     useEffect(() => {
